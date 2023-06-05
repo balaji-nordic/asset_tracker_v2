@@ -1,6 +1,10 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   build:
@@ -12,26 +16,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          path: example-application
+          path: asset_tracker_v2
 
       - name: Initialize
-        working-directory: example-application
+        working-directory: asset_tracker_v2
         run: |
           west init -l .
-          west update
+          west update --narrow -o=--depth=1
 
-      - name: Build firmware
-        working-directory: example-application
+      - name: Install deps
         run: |
-          west build -b custom_plank app
+            apt-get update
+            apt-get install -y ruby-full
+            pip3 install -r nrf/scripts/requirements.txt
+
+      - name: Twister build
+        working-directory: asset_tracker_v2
+        run: |
+          ../zephyr/scripts/twister -i -v --build-only -G --board-root ../nrf/boards/ --testsuite-root ./app/asset_tracker_v2/
 
       - name: Twister Tests
-        working-directory: example-application
+        working-directory: asset_tracker_v2
         run: |
-          ../zephyr/scripts/twister -G --board-root boards/ --testsuite-root ./tests/
-
-      - name: Archive firmware
-        uses: actions/upload-artifact@v2
-        with:
-          name: firmware
-          path: example-application/build/zephyr/zephyr.*
+          ../zephyr/scripts/twister -i -v -G --board-root ../nrf/boards/ --testsuite-root ./app/asset_tracker_v2/tests/
