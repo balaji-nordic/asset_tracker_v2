@@ -12,6 +12,7 @@
 #include <nrf_modem.h>
 #include <modem/lte_lc.h>
 #include <modem/modem_info.h>
+#include <modem/nrf_modem_lib.h>
 #include <modem/pdn.h>
 
 #define MODULE modem_module
@@ -33,6 +34,25 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_MODEM_MODULE_LOG_LEVEL);
 BUILD_ASSERT(!IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT),
 		"The Modem module does not support this configuration");
 
+K_SEM_DEFINE(nrf_modem_initialized_sem, 0, 1);
+NRF_MODEM_LIB_ON_INIT(asset_tracker_init_hook, on_modem_initialized, NULL);
+
+static void on_modem_initialized(int ret, void *ctx)
+{
+	if (ret == 0) {
+		LOG_INF("Modem initialized");
+
+		int err = lte_lc_init();
+		if (err) {
+			LOG_ERR("lte_lc_init, error: %d", err);
+		} else {
+			LOG_INF("LTE link controller initialized");
+			k_sem_give(&nrf_modem_initialized_sem);
+		}
+	} else {
+		LOG_ERR("Modem lib init, error: %d", ret);
+	}
+}
 
 struct modem_msg_data {
 	union {
@@ -940,6 +960,9 @@ static void module_thread_fn(void)
 		state_set(STATE_INIT);
 	} else {
 		state_set(STATE_DISCONNECTED);
+
+		k_sem_take(&nrf_modem_initialized_sem, K_FOREVER);
+
 		SEND_EVENT(modem, MODEM_EVT_INITIALIZED);
 
 		err = setup();
