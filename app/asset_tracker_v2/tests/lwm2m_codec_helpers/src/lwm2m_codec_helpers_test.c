@@ -877,7 +877,9 @@ void test_codec_helpers_object_path_list_generate_too_many_paths(void)
 									    ARRAY_SIZE(path_list)));
 }
 
-void main(void)
+int main(void)
 {
 	(void)unity_main();
+
+	return 0;
 }

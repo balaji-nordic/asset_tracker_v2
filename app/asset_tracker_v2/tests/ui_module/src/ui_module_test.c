@@ -403,7 +403,9 @@ void test_mode_transition(void)
 	verify_publication(true);
 }
 
-void main(void)
+int main(void)
 {
 	(void)unity_main();
+
+	return 0;
 }
