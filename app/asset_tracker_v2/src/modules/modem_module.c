@@ -342,22 +342,12 @@ static void print_carrier_error(const lwm2m_carrier_event_t *evt)
 			"Failed to connect to the LTE network",
 		[LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL] =
 			"Failed to disconnect from the LTE network",
-		[LWM2M_CARRIER_ERROR_FOTA_PKG] =
-			"Package refused from modem",
-		[LWM2M_CARRIER_ERROR_FOTA_PROTO] =
-			"Protocol error",
-		[LWM2M_CARRIER_ERROR_FOTA_CONN] =
-			"Connection to remote server failed",
-		[LWM2M_CARRIER_ERROR_FOTA_CONN_LOST] =
-			"Connection to remote server lost",
 		[LWM2M_CARRIER_ERROR_FOTA_FAIL] =
 			"Modem firmware update failed",
 		[LWM2M_CARRIER_ERROR_CONFIGURATION] =
 			"Illegal object configuration detected",
 		[LWM2M_CARRIER_ERROR_INIT] =
 			"Initialization failure",
-		[LWM2M_CARRIER_ERROR_INTERNAL] =
-			"Internal failure",
 		[LWM2M_CARRIER_ERROR_RUN] =
 			"Configuration failure",
 	};
@@ -404,11 +394,6 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *evt)
 	int err = 0;
 
 	switch (evt->type) {
-	case LWM2M_CARRIER_EVENT_INIT: {
-		LOG_INF("LWM2M_CARRIER_EVENT_INIT");
-		SEND_EVENT(modem, MODEM_EVT_CARRIER_INITIALIZED);
-		break;
-	}
 	case LWM2M_CARRIER_EVENT_LTE_LINK_UP: {
 		LOG_INF("LWM2M_CARRIER_EVENT_LTE_LINK_UP");
 		SEND_EVENT(modem, MODEM_EVT_CARRIER_EVENT_LTE_LINK_UP_REQUEST);
@@ -454,12 +439,7 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *evt)
 		LOG_ERR("LWM2M_CARRIER_EVENT_ERROR");
 		print_carrier_error(evt);
 
-		bool fota_error = err->type == LWM2M_CARRIER_ERROR_FOTA_PKG ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_PROTO ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_CONN ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_CONN_LOST ||
-				  err->type == LWM2M_CARRIER_ERROR_FOTA_FAIL;
-		if (fota_error) {
+		if (err->type == LWM2M_CARRIER_ERROR_FOTA_FAIL) {
 			SEND_EVENT(modem, MODEM_EVT_CARRIER_FOTA_STOPPED);
 		}
 		break;
