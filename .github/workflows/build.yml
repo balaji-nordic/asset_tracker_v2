@@ -40,9 +40,9 @@ jobs:
       - name: Twister build
         working-directory: asset_tracker_v2
         run: |
-          ../zephyr/scripts/twister -i -v --subset ${{ matrix.subset }}/${{ env.SUBSET_SIZE }} --build-only -G --board-root ../nrf/boards/ --testsuite-root ./app/asset_tracker_v2/
+          ../zephyr/scripts/twister -i -v --subset ${{ matrix.subset }}/${{ env.SUBSET_SIZE }} --build-only -G --testsuite-root ./app/asset_tracker_v2/
 
       - name: Twister Tests
         working-directory: asset_tracker_v2
         run: |
-          ../zephyr/scripts/twister -i -v -G --subset ${{ matrix.subset }}/${{ env.SUBSET_SIZE }} --board-root ../nrf/boards/ --testsuite-root ./app/asset_tracker_v2/tests/
+          ../zephyr/scripts/twister -i -v -G --subset ${{ matrix.subset }}/${{ env.SUBSET_SIZE }} --testsuite-root ./app/asset_tracker_v2/tests/
